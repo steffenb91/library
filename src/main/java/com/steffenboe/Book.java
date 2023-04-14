@@ -11,6 +11,7 @@ class Book {
     private final String author;
     private final String bookId;
     private List<Hold> holds = new LinkedList<>();
+    private LocalDate acquisitionDate;
 
     private Member borrower;
     private LocalDate dueDate;
@@ -44,6 +45,7 @@ class Book {
     boolean issue(Member member) {
         this.borrower = member;
         dueDate = LocalDate.now().plusMonths(1);
+        acquisitionDate = LocalDate.now();
         return true;
     }
 
@@ -61,6 +63,18 @@ class Book {
             }
         }
         return null;
+    }
+
+    LocalDate getAcquisitionDate() {
+        return acquisitionDate;
+    }
+
+    void setAcquisitionDate(LocalDate acquisitionDate) {
+        this.acquisitionDate = acquisitionDate;
+    }
+
+    public boolean hasHold() {
+        return !holds.isEmpty();
     }
 
 }

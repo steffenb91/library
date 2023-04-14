@@ -51,4 +51,11 @@ class Member {
         return removed;
     }
 
+    public boolean returnBook(Book book) {
+        return false;
+    }
+
+    public void addFine(double fine, String title) {
+    }
+
 }

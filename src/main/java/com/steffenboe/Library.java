@@ -2,13 +2,22 @@ package com.steffenboe;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.chrono.ChronoPeriod;
+import java.time.temporal.ChronoUnit;
 import java.util.Iterator;
 
-class Library implements Serializable{
+class Library implements Serializable {
+
+    private static final int BOOK_NOT_FOUND = 99;
+    private static final int MEMBER_NOT_FOUND = 98;
+    private static final int BOOK_HAS_HOLD_FINE = 96;
+    private static final int BOOK_HAS_FINE = 95;
+    private static final int BOOK_HAS_HOLD = 94;
+    private static final int OPERATION_FAILED = 0;
+    private static final int OPERATION_COMPLETED = 1;
 
     private static Library instance;
     private Catalog catalog;
@@ -26,7 +35,7 @@ class Library implements Serializable{
         return instance;
     }
 
-    public Book addBook(String title, String author, String bookId) {
+    Book addBook(String title, String author, String bookId) {
         Book book = new Book(title, author, bookId);
         if (catalog.insertBook(book)) {
             return book;
@@ -34,42 +43,42 @@ class Library implements Serializable{
         return null;
     }
 
-    public Member searchMembership(String memberId) {
+    Member searchMembership(String memberId) {
         return null;
     }
 
-    public Book issueBook(String memberId, String bookId) {
+    Book issueBook(String memberId, String bookId) {
         Book book = catalog.search(bookId);
-        if(book == null){
+        if (book == null) {
             return null;
         }
-        if(book.getBorrower() != null){
+        if (book.getBorrower() != null) {
             return null;
         }
 
         Member member = memberList.search(memberId);
-        if(member == null){
+        if (member == null) {
             return null;
         }
-        if(!book.issue(member) && member.issue(book)){
-            return null;    
+        if (!book.issue(member) && member.issue(book)) {
+            return null;
         }
         return null;
     }
 
-    public Iterator<Transaction> getTransactions(String memberId, LocalDate date) {
+    Iterator<Transaction> getTransactions(String memberId, LocalDate date) {
         Member member = memberList.search(memberId);
         Iterator<Transaction> result = null;
-        if(member != null){
+        if (member != null) {
             result = member.getTransactions(date);
         }
         return result;
     }
 
-    public Hold holdBook(String memberId, String bookId, LocalDate date) {
+    Hold holdBook(String memberId, String bookId, LocalDate date) {
         Member member = memberList.search(memberId);
         Book book = catalog.search(bookId);
-        if(member != null && book != null){
+        if (member != null && book != null) {
             return new Hold(member, book, date);
         }
         return null;
@@ -89,6 +98,54 @@ class Library implements Serializable{
             e.printStackTrace();
         }
         return true;
+    }
+
+    int returnBook(String bookId) {
+        Book book = catalog.search(bookId);
+        if (book == null) {
+            return BOOK_NOT_FOUND;
+        }
+        Member member = book.getBorrower();
+        if (member == null) {
+            return MEMBER_NOT_FOUND;
+        }
+        double fine = 0.0;
+        LocalDate dueDate = book.getDueDate();
+        if (LocalDate.now().isAfter(dueDate)) {
+            LocalDate acquisitionDate = book.getAcquisitionDate();
+            if (yearApart(acquisitionDate, dueDate)) {
+                fine = 0.15 * 0.05 * daysElapsedSince(dueDate);
+            } else {
+                fine = 0.25 * 0.1 * daysElapsedSince(dueDate);
+            }
+            if (book.hasHold()) {
+                fine *= 2;
+            }
+        }
+        if (!member.returnBook(book)) {
+            return OPERATION_FAILED;
+        }
+        if (fine > 0.0) {
+            member.addFine(fine, book.getTitle());
+            if (book.hasHold()) {
+                return BOOK_HAS_HOLD_FINE;
+            } else {
+                return BOOK_HAS_FINE;
+            }
+        }
+        if (book.hasHold()) {
+            return BOOK_HAS_HOLD;
+        }
+
+        return OPERATION_COMPLETED;
+    }
+
+    private double daysElapsedSince(LocalDate dueDate) {
+        return ChronoPeriod.between(LocalDate.now(), dueDate).get(ChronoUnit.DAYS);
+    }
+
+    private boolean yearApart(LocalDate acquisitionDate, LocalDate dueDate) {
+        return ChronoPeriod.between(acquisitionDate, dueDate).get(ChronoUnit.YEARS) > 0L;
     }
 
 }

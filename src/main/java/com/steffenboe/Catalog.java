@@ -1,8 +1,9 @@
 package com.steffenboe;
 
+import java.io.Serializable;
 import java.util.LinkedList;
 
-class Catalog {
+class Catalog implements Serializable{
 
     private static Catalog instance;
     private LinkedList<Book> bookCatalog = new LinkedList<>();

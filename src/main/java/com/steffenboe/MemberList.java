@@ -1,6 +1,8 @@
 package com.steffenboe;
 
-public class MemberList {
+import java.io.Serializable;
+
+public class MemberList implements Serializable{
 
     public static MemberList instance() {
         return null;
