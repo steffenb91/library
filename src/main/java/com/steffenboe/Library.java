@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.time.chrono.ChronoPeriod;
-import java.time.temporal.ChronoUnit;
 import java.util.Iterator;
 
 class Library implements Serializable {
@@ -15,9 +13,10 @@ class Library implements Serializable {
     private static final int MEMBER_NOT_FOUND = 98;
     private static final int BOOK_HAS_HOLD_FINE = 96;
     private static final int BOOK_HAS_FINE = 95;
-    private static final int BOOK_HAS_HOLD = 94;
+    static final int BOOK_HAS_HOLD = 94;
     private static final int OPERATION_FAILED = 0;
-    private static final int OPERATION_COMPLETED = 1;
+    static final int OPERATION_COMPLETED = 1;
+    static final int BOOK_ISSUED = 0;
 
     private static Library instance;
     private Catalog catalog;
@@ -109,19 +108,9 @@ class Library implements Serializable {
         if (member == null) {
             return MEMBER_NOT_FOUND;
         }
-        double fine = 0.0;
-        LocalDate dueDate = book.getDueDate();
-        if (LocalDate.now().isAfter(dueDate)) {
-            LocalDate acquisitionDate = book.getAcquisitionDate();
-            if (yearApart(acquisitionDate, dueDate)) {
-                fine = 0.15 * 0.05 * daysElapsedSince(dueDate);
-            } else {
-                fine = 0.25 * 0.1 * daysElapsedSince(dueDate);
-            }
-            if (book.hasHold()) {
-                fine *= 2;
-            }
-        }
+
+        double fine = book.computeFine();
+
         if (!member.returnBook(book)) {
             return OPERATION_FAILED;
         }
@@ -140,12 +129,19 @@ class Library implements Serializable {
         return OPERATION_COMPLETED;
     }
 
-    private double daysElapsedSince(LocalDate dueDate) {
-        return ChronoPeriod.between(LocalDate.now(), dueDate).get(ChronoUnit.DAYS);
-    }
-
-    private boolean yearApart(LocalDate acquisitionDate, LocalDate dueDate) {
-        return ChronoPeriod.between(acquisitionDate, dueDate).get(ChronoUnit.YEARS) > 0L;
+    int removeBook(String bookId) {
+        Book book = catalog.search(bookId);
+        if (book == null) {
+            return BOOK_NOT_FOUND;
+        }
+        int returnCode = book.checkRemovability();
+        if (returnCode != OPERATION_COMPLETED) {
+            return returnCode;
+        }
+        if (catalog.removeBook(bookId)) {
+            return OPERATION_COMPLETED;
+        }
+        return OPERATION_FAILED;
     }
 
 }

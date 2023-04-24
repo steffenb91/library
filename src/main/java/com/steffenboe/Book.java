@@ -1,6 +1,8 @@
 package com.steffenboe;
 
 import java.time.LocalDate;
+import java.time.chrono.ChronoPeriod;
+import java.time.temporal.ChronoUnit;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -75,6 +77,41 @@ class Book {
 
     public boolean hasHold() {
         return !holds.isEmpty();
+    }
+
+    double computeFine() {
+        double fine = 0.0;
+        LocalDate dueDate = getDueDate();
+        if (LocalDate.now().isAfter(dueDate)) {
+            LocalDate acquisitionDate = getAcquisitionDate();
+            if (yearApart(acquisitionDate, dueDate)) {
+                fine = 0.15 * 0.05 * daysElapsedSince(dueDate);
+            } else {
+                fine = 0.25 * 0.1 * daysElapsedSince(dueDate);
+            }
+            if (hasHold()) {
+                fine *= 2;
+            }
+        }
+        return fine;
+    }
+
+    double daysElapsedSince(LocalDate dueDate) {
+        return ChronoPeriod.between(LocalDate.now(), dueDate).get(ChronoUnit.DAYS);
+    }
+
+    boolean yearApart(LocalDate acquisitionDate, LocalDate dueDate) {
+        return ChronoPeriod.between(acquisitionDate, dueDate).get(ChronoUnit.YEARS) > 0L;
+    }
+
+    int checkRemovability() {
+        if (hasHold()) {
+            return Library.BOOK_HAS_HOLD;
+        }
+        if (getBorrower() != null) {
+            return Library.BOOK_ISSUED;
+        }
+        return Library.OPERATION_COMPLETED;
     }
 
 }

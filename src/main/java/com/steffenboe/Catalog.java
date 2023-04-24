@@ -23,4 +23,8 @@ class Catalog implements Serializable{
         return null;
     }
 
+    public boolean removeBook(String bookId) {
+        return false;
+    }
+
 }
