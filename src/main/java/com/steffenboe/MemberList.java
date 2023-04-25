@@ -2,14 +2,15 @@ package com.steffenboe;
 
 import java.io.Serializable;
 
-public class MemberList implements Serializable{
+public class MemberList extends ItemList<Member, String> implements Serializable{
 
-    public static MemberList instance() {
-        return null;
-    }
+    private static MemberList instance;
 
-    public Member search(String memberId) {
-        return null;
+    static MemberList instance() {
+        if (instance == null) {
+            return new MemberList();
+        }
+        return instance;
     }
 
 }

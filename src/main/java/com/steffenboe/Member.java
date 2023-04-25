@@ -4,9 +4,11 @@ import java.time.LocalDate;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 
-class Member {
+class Member implements Matchable<String>{
 
+    private String id = UUID.randomUUID().toString();
     private List<Book> booksBorrowed = new LinkedList<>();
     private List<Hold> booksOnHold = new LinkedList<>();
     private List<Transaction> transactions = new LinkedList<>();
@@ -56,6 +58,11 @@ class Member {
     }
 
     public void addFine(double fine, String title) {
+    }
+
+    @Override
+    public boolean matches(String other) {
+        return this.id.equals(other);
     }
 
 }

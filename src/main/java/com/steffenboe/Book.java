@@ -7,7 +7,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-class Book {
+class Book implements Matchable<String>{
 
     private final String title;
     private final String author;
@@ -113,5 +113,11 @@ class Book {
         }
         return Library.OPERATION_COMPLETED;
     }
+
+    @Override
+    public boolean matches(String other) {
+        return this.bookId.equals(bookId);
+    }
+    
 
 }

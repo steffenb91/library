@@ -1,29 +1,28 @@
 package com.steffenboe;
 
 import java.io.Serializable;
-import java.util.LinkedList;
 
-class Catalog implements Serializable{
+class Catalog extends ItemList<Book, String> implements Serializable {
 
     private static Catalog instance;
-    private LinkedList<Book> bookCatalog = new LinkedList<>();
 
     static Catalog instance() {
-        if(instance == null){
+        if (instance == null) {
             return new Catalog();
         }
         return instance;
     }
 
     boolean insertBook(Book book) {
-        return bookCatalog.add(book);
+        return add(book);
     }
 
-    public Book search(String bookId) {
-        return null;
-    }
-
-    public boolean removeBook(String bookId) {
+    boolean removeBook(String bookId) {
+        Book book = search(bookId);
+        if(book != null){
+            remove(book);
+            return true;
+        }
         return false;
     }
 
