@@ -142,9 +142,13 @@ public class App {
             Book result;
             do {
                 String title = getToken("Enter book title:");
-                String author = getToken("Enter author:");
                 String bookId = getToken("Enter book id:");
-                result = library.addBook(title, author, bookId);
+                if(yesOrNo("Is this a book?")){
+                    String author = getToken("Enter author:");
+                    result = library.addBook(title, author, bookId);
+                } else {
+                    result = library.addPeriodical(title, bookId);
+                }
                 if (result != null) {
                     System.out.println(result);
                 } else {

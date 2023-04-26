@@ -9,19 +9,31 @@ import java.util.List;
 
 class Book implements Matchable<String>{
 
-    private final String title;
-    private final String author;
-    private final String bookId;
+    private String title;
+    private String author;
+    private String bookId;
     private List<Hold> holds = new LinkedList<>();
     private LocalDate acquisitionDate;
 
     private Member borrower;
     private LocalDate dueDate;
+    private int bookType;
+
+    public static final int BOOK = 1;
+    public static final int PERIODICAL = 2;
 
     Book(String title, String author, String bookId){
         this.title = title;
         this.author = author;
         this.bookId = bookId;
+        this.bookType = BOOK;
+    }
+
+    Book(String title, String bookId){
+        this.title = title;
+        this.bookId = bookId;
+        this.bookType = PERIODICAL;
+        this.acquisitionDate = LocalDate.now();
     }
 
     String getTitle() {
@@ -29,6 +41,9 @@ class Book implements Matchable<String>{
     }
 
     String getAuthor() {
+        if(bookType == PERIODICAL){
+            return "";
+        }
         return author;
     }
 
@@ -47,6 +62,19 @@ class Book implements Matchable<String>{
     boolean issue(Member member) {
         this.borrower = member;
         dueDate = LocalDate.now().plusMonths(1);
+        switch(bookType){
+            case PERIODICAL: 
+                LocalDate cutoffDate = LocalDate.now().minusMonths(3);
+                if(cutoffDate.isAfter(acquisitionDate)){
+                    dueDate = dueDate.plusMonths(1);
+                } else {
+                    return false;
+                }
+                break;
+            default:
+                dueDate = dueDate.plusMonths(1);
+                break;
+        }
         acquisitionDate = LocalDate.now();
         return true;
     }

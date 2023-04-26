@@ -144,4 +144,12 @@ class Library implements Serializable {
         return OPERATION_FAILED;
     }
 
+    Book addPeriodical(String title, String bookId) {
+        Book book = new Book(title, bookId);
+        if(catalog.insertBook(book)){
+            return book;
+        }
+        return null;
+    }
+
 }
