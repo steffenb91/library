@@ -5,12 +5,12 @@ import java.time.LocalDate;
 class Hold {
 
     private Member member;
-    private Book book;
+    private LoanableItem item;
     private LocalDate date;
 
-    Hold(Member member, Book book, LocalDate date) {
+    Hold(Member member, LoanableItem book, LocalDate date) {
         this.member = member;
-        this.book = book;
+        this.item = book;
         this.date = date;
     }
 
@@ -18,8 +18,8 @@ class Hold {
         return member;
     }
 
-    Book getBook() {
-        return book;
+    LoanableItem getItem() {
+        return item;
     }
 
     LocalDate getDate() {

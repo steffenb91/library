@@ -2,7 +2,7 @@ package com.steffenboe;
 
 import java.io.Serializable;
 
-class Catalog extends ItemList<Book, String> implements Serializable {
+class Catalog extends ItemList<LoanableItem, String> implements Serializable {
 
     private static Catalog instance;
 
@@ -13,14 +13,14 @@ class Catalog extends ItemList<Book, String> implements Serializable {
         return instance;
     }
 
-    boolean insertBook(Book book) {
+    boolean insertBook(LoanableItem book) {
         return add(book);
     }
 
-    boolean removeBook(String bookId) {
-        Book book = search(bookId);
-        if(book != null){
-            remove(book);
+    boolean removeBook(String id) {
+        LoanableItem loanableItem = search(id);
+        if(loanableItem != null){
+            remove(loanableItem);
             return true;
         }
         return false;

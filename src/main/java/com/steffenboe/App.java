@@ -20,11 +20,13 @@ public class App {
 
         private static final int EXIT = 0;
         private static final int ADD_MEMBER = 1;
-        private static final int ADD_BOOKS = 2;
+        private static final int ADD_ITEMS = 2;
         private static final int ISSUE_BOOKS = 3;
         private static final int HELP = 4;
         private static final int PRINT_TRANSACTIONS = 5;
         private static final int HOLD_BOOK = 0;
+        private static final int BOOK = 1;
+        private static final int PERIODICAL = 2;
 
         private Library library;
 
@@ -66,11 +68,11 @@ public class App {
                 case ADD_MEMBER:
                     addMember();
                     break;
-                case ADD_BOOKS:
-                    addBooks();
+                case ADD_ITEMS:
+                    addLoanableItem();;
                     break;
                 case ISSUE_BOOKS:
-                    issueBooks();
+                    issueItems();
                     break;
                 case PRINT_TRANSACTIONS:
                     getTransactions();
@@ -90,8 +92,8 @@ public class App {
             String memberId = getToken("Enter memberId:");
             String bookId = getToken("Enter book id:");
             LocalDate date = getDate("Enter date for hold.");
-            Hold hold = library.holdBook(memberId, bookId,  date);
-            if(hold != null){
+            Hold hold = library.holdBook(memberId, bookId, date);
+            if (hold != null) {
                 System.out.println("Hold placed successfully.");
             }
         }
@@ -101,10 +103,10 @@ public class App {
             String memberId = getToken("Enter memberId: ");
             LocalDate date = getDate("Please enter the date:");
             result = library.getTransactions(memberId, date);
-            if(result == null){
+            if (result == null) {
                 System.out.println("Invalid memberId");
             } else {
-                while(result.hasNext()){
+                while (result.hasNext()) {
                     Transaction tx = result.next();
                     System.out.println(tx.getType() + " " + tx.getTitle() + "\\n");
                 }
@@ -116,45 +118,23 @@ public class App {
             return null;
         }
 
-        private void issueBooks() {
-            Book result;
+        private void issueItems() {
+            LoanableItem result;
             String memberId = getToken("Enter member id:");
-            if(library.searchMembership(memberId) == null){
+            if (library.searchMembership(memberId) == null) {
                 System.out.println("No such member");
                 return;
             }
             do {
                 String bookId = getToken("Enter book id:");
                 result = library.issueBook(memberId, bookId);
-                if(result != null){
+                if (result != null) {
                     System.out.println(result.getTitle() + " " + result.getDueDate());
                 } else {
                     System.out.println("Book could not be issued.");
                 }
 
-                if(!yesOrNo("Issue more books?")){
-                    break;
-                }
-            } while (true);
-        }
-
-        private void addBooks() {
-            Book result;
-            do {
-                String title = getToken("Enter book title:");
-                String bookId = getToken("Enter book id:");
-                if(yesOrNo("Is this a book?")){
-                    String author = getToken("Enter author:");
-                    result = library.addBook(title, author, bookId);
-                } else {
-                    result = library.addPeriodical(title, bookId);
-                }
-                if (result != null) {
-                    System.out.println(result);
-                } else {
-                    System.out.println("Book could not be added.");
-                }
-                if (!yesOrNo("Add more books?")) {
+                if (!yesOrNo("Issue more books?")) {
                     break;
                 }
             } while (true);
@@ -174,12 +154,35 @@ public class App {
             return 0;
         }
 
-        private void save(){
-            if(library.save()){
+        private void save() {
+            if (library.save()) {
                 System.out.println("Library saved.");
             } else {
                 System.out.println("Saving of library failed.");
             }
+        }
+
+        void addLoanableItem() {
+            LoanableItem result = null;
+            do {
+                String typeString = getToken("Enter type: " + BOOK + " for books, " + PERIODICAL + " for periodicals.");
+                int type = Integer.parseInt(typeString);
+                String title = getToken("Enter title: ");
+                String author = null;
+                if(type == BOOK){
+                    author = getToken("Enter author");
+                }
+                String id = getToken("Enter id");
+                result = library.addLoanableItem(type, title, author, id);
+                if(result != null){
+                    System.out.println(result);
+                } else {
+                    System.err.println("Item could not be added");
+                }
+                if(!yesOrNo("Add more items?")){
+                    break;
+                }
+            } while (true);
         }
     }
 }

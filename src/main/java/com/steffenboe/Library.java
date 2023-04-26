@@ -17,6 +17,8 @@ class Library implements Serializable {
     private static final int OPERATION_FAILED = 0;
     static final int OPERATION_COMPLETED = 1;
     static final int BOOK_ISSUED = 0;
+    private static final int BOOK = 1;
+    private static final int PERIODICAL = 2;
 
     private static Library instance;
     private Catalog catalog;
@@ -46,8 +48,8 @@ class Library implements Serializable {
         return null;
     }
 
-    Book issueBook(String memberId, String bookId) {
-        Book book = catalog.search(bookId);
+    LoanableItem issueBook(String memberId, String bookId) {
+        LoanableItem book = catalog.search(bookId);
         if (book == null) {
             return null;
         }
@@ -76,7 +78,7 @@ class Library implements Serializable {
 
     Hold holdBook(String memberId, String bookId, LocalDate date) {
         Member member = memberList.search(memberId);
-        Book book = catalog.search(bookId);
+        LoanableItem book = catalog.search(bookId);
         if (member != null && book != null) {
             return new Hold(member, book, date);
         }
@@ -100,7 +102,7 @@ class Library implements Serializable {
     }
 
     int returnBook(String bookId) {
-        Book book = catalog.search(bookId);
+        LoanableItem book = catalog.search(bookId);
         if (book == null) {
             return BOOK_NOT_FOUND;
         }
@@ -111,7 +113,7 @@ class Library implements Serializable {
 
         double fine = book.computeFine();
 
-        if (!member.returnBook(book)) {
+        if (!member.returnItem(book)) {
             return OPERATION_FAILED;
         }
         if (fine > 0.0) {
@@ -130,11 +132,11 @@ class Library implements Serializable {
     }
 
     int removeBook(String bookId) {
-        Book book = catalog.search(bookId);
-        if (book == null) {
+        LoanableItem item = catalog.search(bookId);
+        if (item == null) {
             return BOOK_NOT_FOUND;
         }
-        int returnCode = book.checkRemovability();
+        int returnCode = item.checkRemovability();
         if (returnCode != OPERATION_COMPLETED) {
             return returnCode;
         }
@@ -144,10 +146,25 @@ class Library implements Serializable {
         return OPERATION_FAILED;
     }
 
-    Book addPeriodical(String title, String bookId) {
-        Book book = new Book(title, bookId);
-        if(catalog.insertBook(book)){
+    LoanableItem addPeriodical(String title, String bookId) {
+        LoanableItem book = new Periodical(title, bookId);
+        if (catalog.insertBook(book)) {
             return book;
+        }
+        return null;
+    }
+
+    LoanableItem addLoanableItem(int type, String title, String author, String id) {
+        LoanableItem result;
+        if (type == BOOK) {
+            result = new Book(title, author, id);
+        } else if (type == PERIODICAL) {
+            result = new Periodical(title, id);
+        } else {
+            return null;
+        }
+        if (catalog.add(result)) {
+            return result;
         }
         return null;
     }

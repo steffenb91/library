@@ -9,13 +9,13 @@ import java.util.UUID;
 class Member implements Matchable<String>{
 
     private String id = UUID.randomUUID().toString();
-    private List<Book> booksBorrowed = new LinkedList<>();
+    private List<LoanableItem> itemsBorrowed = new LinkedList<>();
     private List<Hold> booksOnHold = new LinkedList<>();
     private List<Transaction> transactions = new LinkedList<>();
 
-    boolean issue(Book book) {
-        if (booksBorrowed.add(book)) {
-            transactions.add(new Transaction("Book issued", book.getTitle()));
+    boolean issue(LoanableItem book) {
+        if (itemsBorrowed.add(book)) {
+            transactions.add(new Transaction("Item issued", book.getTitle()));
             return true;
         }
         return false;
@@ -34,7 +34,7 @@ class Member implements Matchable<String>{
     }
 
     void placeHold(Hold hold) {
-        transactions.add(new Transaction("Hold placed", hold.getBook().getTitle()));
+        transactions.add(new Transaction("Hold placed", hold.getItem().getTitle()));
         booksOnHold.add(hold);
     }
 
@@ -43,9 +43,9 @@ class Member implements Matchable<String>{
         Iterator<Hold> iterator = booksOnHold.iterator();
         while (iterator.hasNext()) {
             Hold hold = iterator.next();
-            String id = hold.getBook().getBookId();
+            String id = hold.getItem().getItemId();
             if (bookId.equals(id)) {
-                transactions.add(new Transaction("Hold removed", hold.getBook().getTitle()));
+                transactions.add(new Transaction("Hold removed", hold.getItem().getTitle()));
                 removed = true;
                 iterator.remove();
             }
@@ -53,7 +53,7 @@ class Member implements Matchable<String>{
         return removed;
     }
 
-    public boolean returnBook(Book book) {
+    public boolean returnItem(LoanableItem book) {
         return false;
     }
 
