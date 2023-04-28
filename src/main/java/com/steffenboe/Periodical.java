@@ -4,19 +4,23 @@ import java.time.LocalDate;
 
 class Periodical extends LoanableItem {
 
-    Periodical(String title, String itemId){
+    Periodical(String title, String itemId) {
         super(title, itemId);
     }
 
     @Override
-    public boolean issue(Member member) {
+    boolean issue(Member member) {
         LocalDate cutoffDate = LocalDate.now().minusMonths(3);
-        if (cutoffDate.isAfter(acquisitionDate)) {
+        if (cutoffDate.isAfter(acquisitionDate) && (super.issue(member))) {
             dueDate = dueDate.plusMonths(1);
             return true;
-        } else {
-            return false;
         }
+        return false;
+    }
+
+    @Override
+    void accept(LoanableItemVisitor visitor) {
+        visitor.visit(this);
     }
 
 }

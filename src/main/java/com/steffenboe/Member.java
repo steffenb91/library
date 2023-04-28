@@ -43,7 +43,7 @@ class Member implements Matchable<String>{
         Iterator<Hold> iterator = booksOnHold.iterator();
         while (iterator.hasNext()) {
             Hold hold = iterator.next();
-            String id = hold.getItem().getItemId();
+            String id = hold.getItem().getId();
             if (bookId.equals(id)) {
                 transactions.add(new Transaction("Hold removed", hold.getItem().getTitle()));
                 removed = true;

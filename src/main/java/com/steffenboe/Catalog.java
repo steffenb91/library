@@ -1,6 +1,7 @@
 package com.steffenboe;
 
 import java.io.Serializable;
+import java.util.List;
 
 class Catalog extends ItemList<LoanableItem, String> implements Serializable {
 
@@ -19,11 +20,18 @@ class Catalog extends ItemList<LoanableItem, String> implements Serializable {
 
     boolean removeBook(String id) {
         LoanableItem loanableItem = search(id);
-        if(loanableItem != null){
+        if (loanableItem != null) {
             remove(loanableItem);
             return true;
         }
         return false;
+    }
+
+    public List<Book> all() {
+        return findAll().stream()
+                .filter(Book.class::isInstance)
+                .map(Book.class::cast)
+                .toList();
     }
 
 }

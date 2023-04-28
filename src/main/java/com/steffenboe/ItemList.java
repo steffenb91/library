@@ -1,5 +1,6 @@
 package com.steffenboe;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -18,5 +19,11 @@ class ItemList<T extends Matchable<K>, K> {
     public boolean remove(T item) {
         return elements.remove(item);
     }
+
+    List<T> findAll(){
+        return new ArrayList<>(elements); 
+    }
+
+
 
 }

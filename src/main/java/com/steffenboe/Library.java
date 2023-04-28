@@ -36,14 +36,6 @@ class Library implements Serializable {
         return instance;
     }
 
-    Book addBook(String title, String author, String bookId) {
-        Book book = new Book(title, author, bookId);
-        if (catalog.insertBook(book)) {
-            return book;
-        }
-        return null;
-    }
-
     Member searchMembership(String memberId) {
         return null;
     }
@@ -53,7 +45,7 @@ class Library implements Serializable {
         if (book == null) {
             return null;
         }
-        if (book.getBorrower() != null) {
+        if (book.getBorrowedBy() != null) {
             return null;
         }
 
@@ -106,7 +98,7 @@ class Library implements Serializable {
         if (book == null) {
             return BOOK_NOT_FOUND;
         }
-        Member member = book.getBorrower();
+        Member member = book.getBorrowedBy();
         if (member == null) {
             return MEMBER_NOT_FOUND;
         }
@@ -146,27 +138,22 @@ class Library implements Serializable {
         return OPERATION_FAILED;
     }
 
-    LoanableItem addPeriodical(String title, String bookId) {
-        LoanableItem book = new Periodical(title, bookId);
-        if (catalog.insertBook(book)) {
-            return book;
+    LoanableItem addLoanableItem(int type, String title, String author, String id) {
+        LoanableItem result;
+        LoanableItemFactory loanableItemFactory = LoanableItemFactory.instance();
+        result = loanableItemFactory.createLoanableItem(type, title, author, id);
+        if (result != null) {
+            if (catalog.add(result)) {
+                return result;
+            }
         }
         return null;
     }
 
-    LoanableItem addLoanableItem(int type, String title, String author, String id) {
-        LoanableItem result;
-        if (type == BOOK) {
-            result = new Book(title, author, id);
-        } else if (type == PERIODICAL) {
-            result = new Periodical(title, id);
-        } else {
-            return null;
+    public void processItems(ItemFormat itemFormat) {
+        for (LoanableItem item : catalog.findAll()) {
+            item.accept(itemFormat);
         }
-        if (catalog.add(result)) {
-            return result;
-        }
-        return null;
     }
 
 }

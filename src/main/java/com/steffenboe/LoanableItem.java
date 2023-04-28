@@ -3,22 +3,23 @@ package com.steffenboe;
 import java.time.LocalDate;
 import java.time.chrono.ChronoPeriod;
 import java.time.temporal.ChronoUnit;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
 abstract class LoanableItem implements Matchable<String> {
 
-    protected String title;
-    protected String itemId;
+    private String title;
+    private String id;
+    protected Member borrowedBy;
+    protected LocalDate dueDate;
+    
     protected List<Hold> holds = new LinkedList<>();
     protected LocalDate acquisitionDate;
 
-    protected Member borrower;
-    protected LocalDate dueDate;
-
     LoanableItem(String title, String itemId){
         this.title = title;
-        this.itemId = itemId;
+        this.id = itemId;
         this.acquisitionDate = LocalDate.now();
     }
 
@@ -26,15 +27,17 @@ abstract class LoanableItem implements Matchable<String> {
         if (hasHold()) {
             return Library.BOOK_HAS_HOLD;
         }
-        if (getBorrower() != null) {
+        if (getBorrowedBy() != null) {
             return Library.BOOK_ISSUED;
         }
         return Library.OPERATION_COMPLETED;
     }
 
-    Member getBorrower() {
-        return borrower;
+    Member getBorrowedBy() {
+        return borrowedBy;
     }
+
+    abstract void accept(LoanableItemVisitor visitor);
 
     double computeFine() {
         double fine = 0.0;
@@ -55,14 +58,37 @@ abstract class LoanableItem implements Matchable<String> {
         return title;
     }
 
+    void placeHold(Hold hold){
+        holds.add(hold);
+    }
+
+    Hold getNextHold(){
+        Iterator<Hold> iterator = holds.iterator();
+        while(iterator.hasNext()){
+            Hold hold = iterator.next();
+            iterator.remove();
+            if(hold.isValid()){
+                return hold;
+            }
+        }
+        return null;
+    }
+
     boolean hasHold() {
         return !holds.isEmpty();
     }
 
-    abstract boolean issue(Member member);
+    boolean issue(Member member){
+        if(borrowedBy != null){
+            return false;
+        }
+        dueDate = LocalDate.now();
+        borrowedBy = member;
+        return true;
+    }
 
-    String getItemId() {
-        return itemId;
+    String getId() {
+        return id;
     }
 
     LocalDate getDueDate() {
@@ -87,7 +113,7 @@ abstract class LoanableItem implements Matchable<String> {
 
     @Override
     public boolean matches(String other) {
-        return this.itemId.equals(itemId);
+        return this.id.equals(id);
     }
     
 }

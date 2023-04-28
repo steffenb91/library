@@ -184,5 +184,9 @@ public class App {
                 }
             } while (true);
         }
+
+        void printItems(){
+            library.processItems(new ItemFormat());
+        }
     }
 }
